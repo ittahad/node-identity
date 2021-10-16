@@ -37,6 +37,11 @@ const userSchema = new Schema({
     username: {
         type: String,
         required: true
+    },
+    active: {
+        type: Boolean,
+        required: true,
+        default: false
     }
 }, {timestamps: true});
 

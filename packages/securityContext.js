@@ -218,13 +218,13 @@ class SecurityContext
         session: false
     });
 
-    getTenantDataContext = (req) => {
-        let connection = this.dataConnectionPool[req.tenantId];
+    getTenantDataContext = (tenantId) => {
+        let connection = this.dataConnectionPool[tenantId];
         return connection;
     };
     
-    getCollection = (req, collectionName, collectionSchema) => {
-        let connection = this.dataConnectionPool[req.tenantId];
+    getCollection = (tenantId, collectionName, collectionSchema) => {
+        let connection = this.dataConnectionPool[tenantId];
         return connection.model(collectionName, collectionSchema);
     };
     
