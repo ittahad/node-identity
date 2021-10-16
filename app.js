@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'prod';
+process.env.NODE_ENV = 'dev';
 
 var createError = require('http-errors');
 var express = require('express');

@@ -11,6 +11,16 @@ var config = new AppSettings();
 
 exports.dataConnectionPool = dataConnectionPool = {};
 
+exports.getTenantDataContext = (tenantId) => {
+    let connection = this.dataConnectionPool[tenantId];
+    return connection;
+};
+
+exports.getCollection = (tenantId, collectionName, collectionSchema) => {
+    let connection = this.dataConnectionPool[tenantId];
+    return connection.model(collectionName, collectionSchema);
+};
+
 exports.tenantDbConnection = tenantDbConnection = function () {
     let tenantConnectionMongoose = new Mongoose();
     tenantConnectionMongoose.connect(config.mongoTenants);

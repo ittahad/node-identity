@@ -217,6 +217,16 @@ class SecurityContext
     verifyUser = passport.authenticate('jwt', {
         session: false
     });
+
+    getTenantDataContext = (req) => {
+        let connection = this.dataConnectionPool[req.tenantId];
+        return connection;
+    };
+    
+    getCollection = (req, collectionName, collectionSchema) => {
+        let connection = this.dataConnectionPool[req.tenantId];
+        return connection.model(collectionName, collectionSchema);
+    };
     
     
     ignoreIdsAndRoles = {

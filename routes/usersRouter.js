@@ -31,7 +31,7 @@ router.get('/ping',
 router.get('/', auth.verifyToken, mongoConnect.dbContextAccessor,
   auth.verifyUser, auth.verifyAdmin,
   (req, res, next) => {
-    let Users = mongoConnect.dataConnectionPool[req.tenantId].model('User', UserSchema);
+    let Users = mongoConnect.getCollection(req.tenantId, 'User', UserSchema);
     Users.find({}, {displayName : 1, email : 1, phone : 1, active: 1})
       .sort({displayName : 1})
       .exec((err, users) => {
@@ -45,11 +45,11 @@ router.get('/', auth.verifyToken, mongoConnect.dbContextAccessor,
  .post('/setActive', auth.verifyToken, mongoConnect.dbContextAccessor,
   auth.verifyUser, auth.verifyAdmin,
   (req, res, next) => {
-    let Users = mongoConnect.dataConnectionPool[req.tenantId].model('User', UserSchema);
+    let Users = mongoConnect.getCollection(req.tenantId, 'User', UserSchema);
     Users.findOne({_id: req.body.userId})
       .then(user => {
 
-        if(user === null && typeof(user) === 'undefined')
+        if(user === null || typeof(user) === 'undefined')
         {
           return responseWriter.response(res, null, {
             success: false,
@@ -102,7 +102,7 @@ router.all('*', mongoConnect.dbContextInitializer, mongoConnect.dbContextAccesso
         return next();
       }
        
-      let Users = mongoConnect.dataConnectionPool[req.tenantId].model('User', UserSchema);
+      let Users = mongoConnect.getCollection(req.tenantId, 'User', UserSchema);
 
       let user = new Users({
         username: req.body.username,
@@ -130,14 +130,6 @@ router.all('*', mongoConnect.dbContextInitializer, mongoConnect.dbContextAccesso
                 success: true,
                 message: 'Registration successful!'
               }, null, 200);
-
-              // passport.authenticate('local')(req, res, () => {
-              //   responseWriter.response(res, {
-              //     success: true,
-              //     message: 'Registration successful!'
-              //   }, null, 200);
-              //   return next();
-              // });
             });
         });
       });

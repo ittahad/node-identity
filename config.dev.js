@@ -9,8 +9,8 @@ function AppSettings() {
     this.publicKey = PUB_KEY;
 
     this.mongoTenants = 'mongodb://localhost:27017/Tenants';
-    this.redisHost = "redis://{{YOUR_CONNECTION_STRING}}";
-    this.redisPass = "{{YOUR_CONNECTION_SECRET}}",
+    this.redisHost = "redis://127.0.0.1:6379";
+    this.redisPass = "123456",
     this.mongoDb = (dbName) => {
         return `mongodb://localhost:27017/${dbName}`;
     }

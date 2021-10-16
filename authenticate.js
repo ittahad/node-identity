@@ -23,7 +23,7 @@ var redisClient = redis.createClient(config.redisHost);
 redisClient.auth(config.redisPass);
 
 exports.localPassport = passport.use(new LocalStrategy({ passReqToCallback:true }, function(req, username, password, done) {
-    let User = mongoConnect.dataConnectionPool[req.tenantId].model('User', UserSchema);
+    let User = mongoConnect.getCollection(req.tenantId, 'User', UserSchema);
     User.findOne({username: username})
     .then((user) => {
         if(user.active === true){
@@ -48,7 +48,7 @@ let options = {
 exports.jwtPassport = passport.use(new JwtStrategy(options,
     (jwtPayload, done) => {
         let userId = mongoose.Types.ObjectId(jwtPayload._id);
-        let Users = mongoConnect.dataConnectionPool[jwtPayload.tenantId].model('User', UserSchema);
+        let Users = mongoConnect.getCollection(jwtPayload.tenantId, 'User', UserSchema);
         Users.findOne({
             _id: userId
         }, (err, user) => {
@@ -86,7 +86,7 @@ exports.verifyUser = passport.authenticate('jwt', {
 exports.verifyAdmin = (req, res, next) => {
     var userId = req.user._id;
     if (userId !== null) {
-        let Users = mongoConnect.dataConnectionPool[req.tenantId].model('User', UserSchema);
+        let Users = mongoConnect.getCollection(req.tenantId, 'User', UserSchema);
         Users.findOne({
                 _id: userId
             })
