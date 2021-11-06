@@ -13,6 +13,11 @@ const responseWriter = require('./utility/res');
 const mongoConnect = require('./dbConnect');
 const AppSettings = require(`./config.${process.env.NODE_ENV}`);
 const UserSchema = require('./models/user');
+const SocialLoginConfigSchema = require('./models/socialloginconfig');
+
+const GithubLogin = require('./identityProviders/githubLogin');
+const UserInfoService = require('./identityProviders/userInfoService');
+const SocialLoginProvider = require('./identityProviders/socialLoginProvider');
 
 var tokenExpirationInSeconds = 3600;
 var refreshTokenExpirationInSeconds = 86400;
@@ -141,7 +146,7 @@ exports.extractJwtToken = (authHeader) => {
     }
 }
 
-exports.grantTypeValidator = (req, res, next) => {
+exports.grantTypeValidator = async (req, res, next) => {
     if(req.body === null || req.body.grant_type === null) {
         let err = new Error("Invalid grant_type parameter");
         responseWriter.response(res, null, {success: false, message: 'Invalid grant_type parameter'}, 403);
@@ -172,6 +177,39 @@ exports.grantTypeValidator = (req, res, next) => {
               }, null, 200);
         });
     }
+    else if(req.body.grant_type === 'social_login') {
+        
+        let collection = mongoConnect.getCollection(req.tenantId, 'SocialLoginConfig', SocialLoginConfigSchema)
+
+        collection.findOne({
+            provider: req.body.provider
+        }).then(
+            async (socialLoginConfig) => {
+                if(socialLoginConfig === null) {
+                    return responseWriter.response(res, null, {
+                        success: false,
+                        message: 'Invalid social login provider'
+                    }, 403);
+                }
+                
+
+                var provider = new SocialLoginProvider();
+
+                provider.prepareProvider(req.body.provider, socialLoginConfig);
+                var data = await provider.handle(req, res);
+
+                var loginHandler = new UserInfoService();
+                loginHandler.createUserInfo(data, req, res, mongoConnect);
+            }
+        ).catch(
+            (err) => {
+                return responseWriter.response(res, null, {
+                    success: false,
+                    message: 'Invalid social login provider'
+                }, 403);
+            }
+        );
+    }
     else {
         return responseWriter.response(res, null, {success: false, message: 'Invalid grant_type parameter'}, 403);
     }
@@ -181,3 +219,5 @@ exports.generateRandomId = generateId = () => {
     const id = crypto.randomBytes(16).toString("hex");
     return id;
 }
+
+
