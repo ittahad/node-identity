@@ -59,4 +59,4 @@ class GoogleLogin
     }
 }
 
-module.exports = GithubLogin;
+module.exports = GoogleLogin;
